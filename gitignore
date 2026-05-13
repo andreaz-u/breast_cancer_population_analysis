@@ -1,0 +1,46 @@
+# ── Data ──────────────────────────────────────────────────────────────────────
+# Raw data files are never committed — see README.md for download instructions
+data/*.xlsx
+data/*.csv
+data/*.tsv
+data/*.json
+
+# ── Notebook outputs ───────────────────────────────────────────────────────────
+# Clear outputs before committing (Cell → All Output → Clear in Jupyter)
+# so diffs stay clean and file sizes stay small
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# ── Figures ────────────────────────────────────────────────────────────────────
+# Generated at runtime — no need to version control
+outputs/figures/*.png
+outputs/figures/*.pdf
+outputs/figures/*.svg
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Virtual environments ───────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── IDEs & editors ────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Miscellaneous ─────────────────────────────────────────────────────────────
+*.log
+*.tmp

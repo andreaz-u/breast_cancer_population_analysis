@@ -1,5 +1,4 @@
 # 🎗️ Breast Cancer Survival Prediction
-### Statistical Analysis & ML Classification across Two Clinical Populations
 
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-1.x-F7931E?logo=scikit-learn&logoColor=white)
@@ -7,23 +6,32 @@
 ![Status](https://img.shields.io/badge/status-complete-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
----
-
-## Overview
-
-This project performs a **comparative survival analysis** of breast cancer patients from two independent clinical cohorts — **SEER** (National Cancer Institute, US) and **METABRIC** (Molecular Taxonomy of Breast Cancer International Consortium, Canada–UK). The study spans the full data science pipeline: exploratory analysis, statistical hypothesis testing, and machine learning classification.
-
-The central question is: **which clinical variables best predict whether a patient survives breast cancer, and do those relationships hold across different populations?**
+Not all breast cancer patients face the same odds. Estrogen receptor status doubles survival chances, while regional node spread hits harder in some populations than others. This project digs into two real clinical cohorts — **SEER** and **METABRIC** — to uncover what actually drives patient outcomes, combining statistical hypothesis testing with machine learning classification.
 
 ---
 
-## Key Findings
+## What's inside
 
-- **Estrogen receptor status** is the single strongest predictor of survival, roughly doubling the odds of survival when positive
-- The effect of **positive regional lymph nodes** on survival months differs significantly between populations: each additional node reduces expected survival by ~4.5 months more in METABRIC than in SEER (p < 0.05)
-- **Logistic Regression outperforms** both Decision Tree and Neural Network in accuracy (0.80), precision (0.85), and F1-score (0.86), while remaining fully interpretable
-- Splitting tumours by the clinical 50mm high-risk threshold does **not** significantly improve survival status prediction (LR test, p > 0.05)
-- The Decision Tree severely **overfits** (CV accuracy = 0.36) without depth constraints, highlighting the importance of regularisation
+The project follows a four-step pipeline, each with its own notebook:
+
+| Notebook | What it does |
+|---|---|
+| `00_data_cleaning.ipynb` | Loads raw SEER and METABRIC files, cleans and aligns them to a shared 9-variable schema, exports `clean_data_breast_cancer.xlsx` |
+| `01_eda.ipynb` | Descriptive statistics, pairwise scatter plots, correlation heatmaps, violin plots |
+| `02_hypothesis_testing.ipynb` | Three statistical tests on survival predictors across populations |
+| `03_machine_learning.ipynb` | Trains and compares Logistic Regression, Decision Tree, and Neural Network |
+
+If you just want to run everything at once without the notebooks, `breast_cancer_analysis.py` runs the full pipeline end to end.
+
+---
+
+## Key findings
+
+- **Estrogen receptor status** is the strongest clinical predictor — positive receptors roughly double the odds of survival
+- The **regional node penalty differs by population**: each extra positive node costs ~4.5 more survival months in METABRIC than in SEER (p < 0.05)
+- **Logistic Regression outperforms** both Decision Tree and Neural Network — accuracy 0.80, F1 0.86 — while remaining the most interpretable
+- Splitting patients by the clinical 50mm tumour threshold does **not** improve survival prediction (LR test, p > 0.05)
+- The Decision Tree **overfits badly** without depth constraints (CV accuracy = 0.36), a known limitation of single trees on tabular data
 
 ---
 
@@ -34,43 +42,63 @@ The central question is: **which clinical variables best predict whether a patie
 | SEER | [NCI / IEEE DataPort](https://ieee-dataport.org/open-access/seer-breast-cancer-data) | 4,005 | 9 |
 | METABRIC | [cBioPortal / Nature](https://www.nature.com/articles/nature10983) | 1,406 | 9 |
 
-**Shared features:** Age, T Stage, Grade, Tumor Size, Estrogen Status, Progesterone Status, Regional Node Positive, Survival Months, Status (alive/dead)
+Both datasets share these 9 features: Age, T Stage, Grade, Tumor Size, Estrogen Status, Progesterone Status, Regional Node Positive, Survival Months, and Status (alive/dead).
 
-> ⚠️ The datasets are **not included** in this repository due to patient privacy and licensing restrictions. Download links are provided above. Place both sheets in a single Excel file named `clean_data_breast_cancer.xlsx` with sheet names `SEER` and `METABRIC`.
-
----
-
-## Project Structure
-
-```
-breast-cancer-survival/
-│
-├── breast_cancer_analysis.py   # Main analysis script (EDA → Hypothesis tests → ML)
-├── clean_data_breast_cancer.xlsx  # ← not included, see Datasets section
-├── README.md
-└── requirements.txt
-```
+> ⚠️ Raw data files are not included in this repository due to patient privacy and licensing restrictions. Download them from the links above and place them in `data/` before running the cleaning notebook.
 
 ---
 
-## Methods
+## Getting started
 
-### 1. Exploratory Data Analysis
-- Descriptive statistics for both cohorts
-- Pairwise scatter matrices, histograms (T Stage, Grade), and correlation heatmaps
-- Violin plots for categorical vs. numerical variable relationships
+**1. Clone the repo**
+```bash
+git clone https://github.com/andreaz-u/breast_cancer_population_analysis.git
+cd breast_cancer_population_analysis
+```
 
-### 2. Statistical Hypothesis Testing (α = 0.05)
+**2. Install dependencies**
+```bash
+pip install -r requirements.txt
+```
+
+**3. Add the raw data**
+
+Download both datasets and place them in the `data/` folder:
+```
+data/
+├── SEER_Breast_Cancer_Dataset_.csv
+└── METABRIC_raw.csv
+```
+
+**4. Run the cleaning notebook first**
+
+Open `notebooks/00_data_cleaning.ipynb` and run all cells. This produces `data/clean_data_breast_cancer.xlsx`, which all other notebooks depend on.
+
+**5. Run the analysis notebooks in order**
+```
+notebooks/01_eda.ipynb
+notebooks/02_hypothesis_testing.ipynb
+notebooks/03_machine_learning.ipynb
+```
+
+Or run everything at once from the terminal:
+```bash
+python breast_cancer_analysis.py
+```
+
+---
+
+## Statistical tests (α = 0.05)
 
 | # | Hypothesis | Method | Result |
 |---|---|---|---|
-| H1 | Effect of regional nodes on survival months differs by population | OLS with interaction term | ✅ Rejected H₀ (p < 0.05) |
-| H2 | Estrogen receptor effect on survival status differs by population | Logistic regression with interaction | ✅ Rejected H₀ (p < 0.05) |
+| H1 | Regional node effect on survival months differs by population | OLS with interaction term | ✅ Rejected H₀ |
+| H2 | Estrogen effect on survival outcome differs by population | Logistic regression with interaction | ✅ Rejected H₀ |
 | H3 | Splitting by tumour size (>50mm) improves survival prediction | Likelihood Ratio Test (χ²) | ❌ Failed to reject H₀ |
 
-### 3. Machine Learning Classification
+---
 
-Three classifiers trained on the combined dataset (70/30 split, 10-fold cross-validation):
+## Model performance (10-fold cross-validation)
 
 | Model | Accuracy | Precision | Recall | F1 | AUC-ROC |
 |---|---|---|---|---|---|
@@ -80,66 +108,35 @@ Three classifiers trained on the combined dataset (70/30 split, 10-fold cross-va
 
 ---
 
-## Installation & Usage
-
-**1. Clone the repository**
-```bash
-git clone https://github.com/your-username/breast-cancer-survival.git
-cd breast-cancer-survival
-```
-
-**2. Install dependencies**
-```bash
-pip install -r requirements.txt
-```
-
-**3. Add the data file**
-
-Download both datasets and place them in the project root as `clean_data_breast_cancer.xlsx` (see [Datasets](#datasets)).
-
-**4. Update the data path**
-
-In `breast_cancer_analysis.py`, update `DATA_PATH` at the top of the file to point to your local file:
-```python
-DATA_PATH = "clean_data_breast_cancer.xlsx"
-```
-
-**5. Run the analysis**
-```bash
-python breast_cancer_analysis.py
-```
-
-The script runs sequentially through EDA, hypothesis tests, and ML evaluation, printing results and displaying plots at each stage.
-
----
-
-## Requirements
+## Project structure
 
 ```
-pandas
-numpy
-matplotlib
-seaborn
-scikit-learn
-statsmodels
-scipy
-openpyxl
-```
-
-Install all at once:
-```bash
-pip install pandas numpy matplotlib seaborn scikit-learn statsmodels scipy openpyxl
+breast_cancer_population_analysis/
+│
+├── notebooks/
+│   ├── 00_data_cleaning.ipynb
+│   ├── 01_eda.ipynb
+│   ├── 02_hypothesis_testing.ipynb
+│   └── 03_machine_learning.ipynb
+│
+├── data/                          # raw data goes here — not committed
+│   └── .gitkeep
+│
+├── breast_cancer_analysis.py      # full pipeline runner
+├── requirements.txt
+├── .gitignore
+└── README.md
 ```
 
 ---
 
-## Limitations & Future Work
+## Limitations & next steps
 
-- Models only include pre-treatment clinical variables; biomarkers like HER2 status and family history are excluded due to data availability
-- SEER is heavily class-imbalanced (85% alive), which may inflate some classification metrics
-- The Decision Tree was not tuned (no depth limit or pruning); a grid search over hyperparameters would significantly improve its performance
-- A backward stepwise feature selection procedure (AIC-based) was not applied to the logistic regression — this is a natural next step
-- With only ~5,400 combined observations, deep learning approaches are constrained; a larger unified dataset would enable more robust modelling
+- Only pre-treatment clinical variables are used — biomarkers like HER2 status, family history, and treatment type could meaningfully improve predictions
+- SEER is heavily class-imbalanced (85% alive), which may inflate accuracy metrics — SMOTE or class-weighted loss functions are worth exploring
+- No backward stepwise feature selection was applied to the logistic regression — a leaner model may generalise better
+- With ~5,400 combined observations, deep learning is constrained — tens of thousands of records would be needed for neural networks to show a meaningful advantage
+- A survival analysis approach (e.g. Cox Proportional Hazards) would make better use of Survival Months as a time-to-event outcome rather than a feature
 
 ---
 
@@ -147,15 +144,11 @@ pip install pandas numpy matplotlib seaborn scikit-learn statsmodels scipy openp
 
 - Teng, J. (2019). *SEER Breast Cancer Data*. IEEE DataPort.
 - Curtis, C. et al. (2012). *The genomic and transcriptomic architecture of 2,000 breast tumours reveals novel subgroups*. Nature.
-- Pereira, B. et al. (2016). *The somatic mutation profiles of 2,433 breast cancers refine their genomic and transcriptomic landscapes*. Nature Communications.
+- Pereira, B. et al. (2016). *The somatic mutation profiles of 2,433 breast cancers*. Nature Communications.
 - Parkin, D.M. et al. (2001). Estimating the world cancer burden: Globocan 2000. *International Journal of Cancer*, 94(2), 153–6.
 
 ---
 
-## Author
-
 **Jia Xin Zhu** — Statistical Methods for Data Science, University of Gothenburg, 2025
 
----
-
-*If you find this project useful or have suggestions, feel free to open an issue or reach out.*
+*Feel free to open an issue or reach out with questions or suggestions.*
